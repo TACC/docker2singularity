@@ -52,7 +52,6 @@ image_name=${image_name/:/_}
 #creation_date=`docker inspect --format="{{.Created}}" $container_id`
 creation_date=`docker inspect --format="{{.Created}}" $image`
 
-
 ################################################################################
 ### IMAGE SIZE #################################################################
 ################################################################################
@@ -60,14 +59,16 @@ creation_date=`docker inspect --format="{{.Created}}" $image`
 size=`docker inspect --format="{{.Size}}" $image`
 # convert size in MB (it seems too small for singularity containers ...?). Add 1MB to round up (minimum).
 size=`echo $(($size/1000000+1))`
-# adding half of the container size seems to work (do not know why exactly...?)
-# I think it would be Ok by adding 1/3 of the size.
-size=`echo $(($size+$size/2))`
+
+# for small containers (less than 5MB), double the size
+# otherwise, add half the container size
+if [ "$size" -lt "5" ]; then
+    size=`echo $(($size*2))`
+else
+    size=`echo $(($size+$size/2))`
+fi
 
 echo "Size: $size MB for the singularity container"
-
-
-
 
 ################################################################################
 ### IMAGE CREATION #############################################################
