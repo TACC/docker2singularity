@@ -147,15 +147,18 @@ singularity exec --writable --contain $new_container_name /bin/sh -c "mkdir -p m
 # making sure that any user can read and execute everything in the container
 echo "(7/9) Fixing permissions..."
 singularity exec --writable --contain $new_container_name /bin/sh -c "find /* -maxdepth 0 -not -path '/dev*' -not -path '/proc*' -not -path '/sys*' -exec chmod a+r -R '{}' \;"
-if singularity exec --contain $new_container_name grep -q Buildroot /etc/issue ; then
-    # we're running on a Builroot container and need to use Busybox's find
-    echo "We're running on BusyBox/Buildroot"
-    singularity exec --writable --contain $new_container_name /bin/sh -c "find / \( -type f -o -type d \) -perm -u+x ! -perm -o+x ! -path '/dev*' ! -path '/proc*' ! -path '/sys*' -exec chmod a+x '{}' \;"
-else
-    echo "We're not running on BusyBox/Buildroot"
-#    singularity exec --writable --contain $new_container_name /bin/sh -c "find / -executable -perm -u+x,o-x -not -path '/dev*' -not -path '/proc*' -not -path '/sys*' -exec chmod a+x '{}' \;"
-    singularity exec --writable --contain $new_container_name /bin/sh -c "find / -executable -perm -u+x ! -perm -o+x ! -path '/dev*' ! -path '/proc*' ! -path '/sys*' -exec chmod a+x '{}' \;"
-fi
+
+# NOTE: IF STATEMENT BROKEN; USING BUSYBOX FIND AS DEFAULT
+
+#if singularity exec --contain $new_container_name grep -q Buildroot /etc/issue ; then
+#    # we're running on a Builroot container and need to use Busybox's find
+#    echo "We're running on BusyBox/Buildroot"
+singularity exec --writable --contain $new_container_name /bin/sh -c "find / \( -type f -o -type d \) -perm -u+x ! -perm -o+x ! -path '/dev*' ! -path '/proc*' ! -path '/sys*' -exec chmod a+x '{}' \;"
+#else
+#    echo "We're not running on BusyBox/Buildroot"
+#    singularity exec --writable --contain $new_container_name /bin/sh -c "find / -executable -perm -u+x,o-x -not -path '/dev*' -not -path '/proc*' -not -path '/sys*' -exec chmod a+x '{}' \;" # OLD
+#    singularity exec --writable --contain $new_container_name /bin/sh -c "find / -executable -perm -u+x ! -perm -o+x ! -path '/dev*' ! -path '/proc*' ! -path '/sys*' -exec chmod a+x '{}' \;"
+#fi
 
 echo "(8/9) Stopping and removing the container..."
 docker stop $container_id
