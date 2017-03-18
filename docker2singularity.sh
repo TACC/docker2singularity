@@ -60,9 +60,9 @@ size=`docker inspect --format="{{.Size}}" $image`
 # convert size in MB (it seems too small for singularity containers ...?). Add 1MB to round up (minimum).
 size=`echo $(($size/1000000+1))`
 
-# for small containers (less than 5MB), double the size
+# for small containers (less than 7MB), double the size
 # otherwise, add half the container size
-if [ "$size" -lt "5" ]; then
+if [ "$size" -lt "7" ]; then
     size=`echo $(($size*2))`
 else
     size=`echo $(($size+$size/2))`
