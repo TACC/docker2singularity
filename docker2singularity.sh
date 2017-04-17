@@ -129,7 +129,10 @@ singularity copy $new_container_name $TMPDIR/singularity /
 ### SINGULARITY ENVIRONMENT ####################################################
 ################################################################################
 echo "(5/9) Setting ENV variables..."
-docker run --rm --entrypoint="/usr/bin/env" $image > $TMPDIR/docker_environment
+# some containers have env at '/bin/env', not '/usr/bin/env', so use OR to get environment
+# docker run --rm --entrypoint="/usr/bin/env" $image > $TMPDIR/docker_environment
+docker run --rm --entrypoint="/usr/bin/env" $image > $TMPDIR/docker_environment 2> /dev/null || docker run --rm --entrypoint="/bin/env" $image > $TMPDIR/docker_environment
+
 # don't include HOME and HOSTNAME - they mess with local config
 sed -i '/^HOME/d' $TMPDIR/docker_environment
 sed -i '/^HOSTNAME/d' $TMPDIR/docker_environment
