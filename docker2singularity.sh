@@ -49,7 +49,6 @@ image_name=${image_name//\//_}
 image_name=${image_name/:/_}
 
 # following is the date of the container, not the docker image.
-#creation_date=`docker inspect --format="{{.Created}}" $container_id`
 creation_date=`docker inspect --format="{{.Created}}" $image`
 
 ################################################################################
@@ -130,7 +129,6 @@ singularity copy $new_container_name $TMPDIR/singularity /
 ################################################################################
 echo "(5/9) Setting ENV variables..."
 # some containers have env at '/bin/env', not '/usr/bin/env', so use OR to get environment
-# docker run --rm --entrypoint="/usr/bin/env" $image > $TMPDIR/docker_environment
 docker run --rm --entrypoint="/usr/bin/env" $image > $TMPDIR/docker_environment 2> /dev/null || docker run --rm --entrypoint="/bin/env" $image > $TMPDIR/docker_environment
 
 # don't include HOME and HOSTNAME - they mess with local config
@@ -151,17 +149,8 @@ singularity exec --writable --contain $new_container_name /bin/sh -c "mkdir -p m
 echo "(7/9) Fixing permissions..."
 singularity exec --writable --contain $new_container_name /bin/sh -c "find /* -maxdepth 0 -not -path '/dev*' -not -path '/proc*' -not -path '/sys*' -exec chmod a+r -R '{}' \;"
 
-# NOTE: IF STATEMENT BROKEN; USING BUSYBOX FIND AS DEFAULT
-
-#if singularity exec --contain $new_container_name grep -q Buildroot /etc/issue ; then
-#    # we're running on a Builroot container and need to use Busybox's find
-#    echo "We're running on BusyBox/Buildroot"
+# assume Builroot container and use BusyBox find
 singularity exec --writable --contain $new_container_name /bin/sh -c "find / \( -type f -o -type d \) -perm -u+x ! -perm -o+x ! -path '/dev*' ! -path '/proc*' ! -path '/sys*' -exec chmod a+x '{}' \;"
-#else
-#    echo "We're not running on BusyBox/Buildroot"
-#    singularity exec --writable --contain $new_container_name /bin/sh -c "find / -executable -perm -u+x,o-x -not -path '/dev*' -not -path '/proc*' -not -path '/sys*' -exec chmod a+x '{}' \;" # OLD
-#    singularity exec --writable --contain $new_container_name /bin/sh -c "find / -executable -perm -u+x ! -perm -o+x ! -path '/dev*' ! -path '/proc*' ! -path '/sys*' -exec chmod a+x '{}' \;"
-#fi
 
 echo "(8/9) Stopping and removing the container..."
 docker stop $container_id
