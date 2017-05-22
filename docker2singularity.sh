@@ -64,7 +64,8 @@ size=`echo $(($size/1000000+1))`
 if [ "$size" -lt "7" ]; then
     size=`echo $(($size*2))`
 else
-    size=`echo $(($size+$size/2))`
+    # Docker container quay.io/biocontainers/rust:1.14.0--0 required 1.66*size, so rounding up here
+    size=`echo $(($size+$size*7/10))`
 fi
 
 echo "Size: $size MB for the singularity container"
