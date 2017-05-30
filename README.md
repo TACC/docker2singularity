@@ -20,6 +20,8 @@ No need to download anything from this repository! Simply type:
 
 Replace `D:\host\path\where\to\ouptut\singularity\image` with a path on the host filesystem where your Singularity image will be created. Replace `ubuntu:14.04` with the docker image name you wish to convert (it will be pulled from Docker Hub if it does not exist on your host system).
 
+Pass in custom mount points as an evironment variable `-e MOUNTPOINTS=/home /work /scratch` to override the defaults that ship with `docker2singularity`. This is handy for adding shared filesystems that are specific to your local Singularity-powered HPC system. 
+
 `docker2singularity` uses the Docker daemon located on the host system. It will access the Docker image cache from the host system avoiding having to redownload images that are already present locally.
 
 ## Tips for making Docker images compatible with Singularity
