@@ -10,6 +10,12 @@
 # Currently ENTRYPOINTs and CMDs with commas in the arguments are not supported
 #
 # USAGE: docker2singularity.sh ubuntu:14.04
+#
+# Optional: You can override the list of mountpoints created in the container 
+# by setting MOUNTPOINTS environment variable
+
+MOUNTPOINTS="${_MOUNTPOINTS:-/oasis /projects /scratch /local-scratch /work /home1 /corral-repl /beegfs /share/PI /extra}"
+
 set -o errexit
 set -o nounset
 
@@ -144,13 +150,16 @@ rm -rf $TMPDIR
 ### Permissions ################################################################
 ################################################################################
 echo "(6/9) Adding mount points..."
-singularity exec --writable --contain $new_container_name /bin/sh -c "mkdir -p mkdir /oasis /projects /scratch /local-scratch /work /home1 /corral-repl /beegfs /share/PI /extra"
+echo "      ${MOUNTPOINTS}"
+singularity exec --writable --contain $new_container_name /bin/sh -c "mkdir -p ${MOUNTPOINTS}"
 
 # making sure that any user can read and execute everything in the container
 echo "(7/9) Fixing permissions..."
+echo "7.1"
 singularity exec --writable --contain $new_container_name /bin/sh -c "find /* -maxdepth 0 -not -path '/dev*' -not -path '/proc*' -not -path '/sys*' -exec chmod a+r -R '{}' \;"
 
 # assume Builroot container and use BusyBox find
+echo "7.2"
 singularity exec --writable --contain $new_container_name /bin/sh -c "find / \( -type f -o -type d \) -perm -u+x ! -perm -o+x ! -path '/dev*' ! -path '/proc*' ! -path '/sys*' -exec chmod a+x '{}' \;"
 
 echo "(8/9) Stopping and removing the container..."
