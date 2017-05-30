@@ -157,8 +157,13 @@ singularity exec --writable --contain $new_container_name /bin/sh -c "mkdir -p $
 echo "(7/9) Fixing permissions..."
 singularity exec --writable --contain $new_container_name /bin/sh -c "find /* -maxdepth 0 -not -path '/dev*' -not -path '/proc*' -not -path '/sys*' -exec chmod a+r -R '{}' \;"
 
-# assume Builroot container and use BusyBox find
-singularity exec --writable --contain $new_container_name /bin/sh -c "find / \( -type f -o -type d \) -perm -u+x ! -perm -o+x ! -path '/dev*' ! -path '/proc*' ! -path '/sys*' -exec chmod a+x '{}' \;"
+# Ubuntu generates benign warnings with the find command.  Squelch these errors if we are on Ubuntu
+if singularity exec --contain $new_container_name grep -q Ubuntu /etc/issue ; then
+    singularity exec --writable --contain $new_container_name /bin/sh -c "find / -ignore_readdir_race \( -type f -o -type d \) -perm -u+x ! -perm -o+x ! -path '/dev*' ! -path '/proc*' ! -path '/sys*' -exec chmod a+x '{}' \; 2> /dev/null"
+else
+    # use syntax compatible with BusyBox find
+    singularity exec --writable --contain $new_container_name /bin/sh -c "find / \( -type f -o -type d \) -perm -u+x ! -perm -o+x ! -path '/dev*' ! -path '/proc*' ! -path '/sys*' -exec chmod a+x '{}' \;"
+fi
 
 echo "(8/9) Stopping and removing the container..."
 docker stop $container_id
