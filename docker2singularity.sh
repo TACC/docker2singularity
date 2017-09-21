@@ -167,7 +167,7 @@ else
 fi
 
 echo "(8/9) Stopping and removing the container..."
-docker stop $container_id
+docker stop -t 0 $container_id
 docker rm $container_id
 
 echo "(9/9) Moving the image to the output folder..."
